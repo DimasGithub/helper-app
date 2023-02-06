@@ -1,0 +1,100 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Forms upload{% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{{ ASSETS_ROOT }}/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{{ ASSETS_ROOT }}/css/adminlte.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}    
+
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Upload data</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Data</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">Bulk upload data</h3>
+              </div>
+              <form method='POST' enctype="multipart/form-data">
+              {% csrf_token %}
+                <div class="card-body">
+                  <div class="form-group">
+                      <label for="inputNip">NIP *</label>
+                      <input type="number" class="form-control" id="inputNip" placeholder="NIP" name="nip" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="uploadFileReport">File upload (.xlxs) *</label>
+                    <div class="input-group">
+                      <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="uploadFileReport" name ="upload_data" required>
+                        <label class="custom-file-label" for="uploadFileReport">Choose file</label>
+                      </div>
+                      <div class="input-group-append">
+                        <span class="input-group-text">Upload</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  <!-- jQuery -->
+  <script src="{{ ASSETS_ROOT }}/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="{{ ASSETS_ROOT }}/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- bs-custom-file-input -->
+  <script src="{{ ASSETS_ROOT }}/plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="{{ ASSETS_ROOT }}/js/adminlte.min.js"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="{{ ASSETS_ROOT }}/js/demo.js"></script>
+  <script>
+  $(function () {
+    bsCustomFileInput.init();
+  });
+  </script>
+
+{% endblock javascripts %}
