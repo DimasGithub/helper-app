@@ -22,10 +22,10 @@ def upload(request):
     if request.method == 'POST':
         try:
             nip = request.POST['nip']
-            data_nip = Nip.objects.get(nip)
+            data_nip = Nip.objects.get(nip=nip)
             if data_nip:
                 file = request.FILES['upload_data']
-                api_kinerja = PostingDailyReport(nip=data_nip.nip, filename=file)
+                api_kinerja = PostingDailyReport(nip=data_nip.nip, filename=file).requests_data()
                 
                 return HttpResponseRedirect(reverse('admin:index'))
         except Nip.DoesNotExist:

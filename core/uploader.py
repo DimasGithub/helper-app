@@ -54,7 +54,23 @@ class InfoYearlySkp(BaseApiEkinerja):
         endpoint = f"{self.url_base_ekinerja}/skp-tahunan/{self.nip}"
         return requests.get(endpoint)
 
-class PostingDailyReport(InfoEmployee, InfoYearlySkp, ListPerformAggrement ):
+class DeleteAllData(ListDailyReport):
+    def __init__(self, nip) -> None:
+        self.nip = nip
+    def requests_data(self) -> None:
+        endpoint = f"{self.url_base_ekinerja}/laporan-harian"
+        headers = CaseInsensitiveDict()
+        headers["Content-Type"] = "application/json"
+        list_daily_report = ListDailyReport(self.nip).requests_data()
+        resp_list = json.loads(list_daily_report.text)
+        list_id = []
+        for resp in resp_list:
+            list_id.append(resp.get('id'))
+        for id in list_id:
+            resp = requests.delete(endpoint, headers = headers, data=json.dumps({'id':int(id)}, indent=4))
+            print(resp)
+
+class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerformAggrement ):
 
     def __init__(self, nip, filename):
         self.nip = nip
@@ -94,7 +110,7 @@ class PostingDailyReport(InfoEmployee, InfoYearlySkp, ListPerformAggrement ):
         data_user = json.loads(info_user.text)
         info_yaerly_skp = InfoYearlySkp(nip).requests_data()
 
-        if info_yaerly_skp.status_code != 200: raise KEt
+        if info_yaerly_skp.status_code != 200: raise SyntaxError
         response_info_yaerly_skp = json.loads(info_yaerly_skp.text)
         data_info_yaerly_skp = response_info_yaerly_skp[0]
         intial_data_user= {
@@ -109,7 +125,31 @@ class PostingDailyReport(InfoEmployee, InfoYearlySkp, ListPerformAggrement ):
             "subUnit":data_user.get('data').get('subunit').get('id')
         }
         return intial_data_user
-        
+   
+    #if using duplicate validation need time one
+    def is_duplicated(self, data:dict)->dict:
+        list_daily = ListDailyReport(nip=self.nip).requests_data()
+        list_data  = json.loads(list_daily.text)
+        for daily in list_data:
+            duplicate_num = 0
+            date = daily.get('tanggal').split()
+            if date[1].lower() == 'januari':
+                date[1] = 'January'
+            new_date_string = ' '.join(date)  
+            if datetime.datetime.strptime(new_date_string, "%d %B %Y").strftime("%Y-%m-%d") == data.get('tanggal'):
+                duplicate_num += 1
+            if daily.get('waktuMulai') == data.get('waktuMulai'):
+                duplicate_num += 1
+            if daily.get('waktuSelesai') == data.get('waktuSelesai'):
+                duplicate_num += 1
+            if daily.get('rencanaKinerja').get('id') == data.get('rencanaKinerjaId'):
+                duplicate_num += 1
+            if int(daily.get('jumlah')) == int(data.get('jumlah')):
+                duplicate_num += 1
+            
+            if duplicate_num == 5: return True
+        return False
+
     def requests_data(self) ->None:
         endpoint = f"{self.url_base_ekinerja}/laporan-harian"
         headers = CaseInsensitiveDict()
@@ -117,7 +157,6 @@ class PostingDailyReport(InfoEmployee, InfoYearlySkp, ListPerformAggrement ):
         initial_data_user = self.initial_data_user(self.nip)
         data_xls = self.xls_to_dict(self.filename)
 
-        if data_xls.status_code != 200  
         for item in data_xls:
 
             def hours_minutes_time(start_time:str, last_time:str ):
@@ -147,7 +186,6 @@ class PostingDailyReport(InfoEmployee, InfoYearlySkp, ListPerformAggrement ):
             
             def get_perform_aggrement(nip:str, rencanaKinerjaId:str)->dict:
                 list_perform_aggr = ListPerformAggrement(nip, filter={'month':'Januari', 'year':'2023'}).requests_data()
-                print(list_perform_aggr)
                 if list_perform_aggr.status_code != 200: raise KeyError
 
                 response_perform_aggr = json.loads(list_perform_aggr.text)
@@ -164,10 +202,13 @@ class PostingDailyReport(InfoEmployee, InfoYearlySkp, ListPerformAggrement ):
             }
             data.update(data_relation_perform)
             data.update(initial_data_user)
-            data = json.dumps(data, indent=4)
-            response = requests.post(endpoint, headers = headers,data=data)
-
-if __name__ == '__main__':
-    filename = 'core/format_kinerja2.xlsx'
-    resp = PostingDailyReport(filename=filename, nip='199510292022031004').requests_data()
+            if not self.is_duplicated(data=data):
+                data = json.dumps(data, indent=4)
+                response = requests.post(endpoint, headers = headers,data=data)
+            else:
+                print("duplicate data")
+# if __name__ == '__main__':
+#     filename = 'core/format_kinerja2.xlsx'
+#     # resp = DeleteAllData(nip='199510292022031004').requests_data()
+#     resp = PostingDailyReport(filename=filename, nip='199510292022031004').requests_data()
 
