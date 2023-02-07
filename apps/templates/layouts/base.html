@@ -15,6 +15,7 @@
 </head>
 <body class="hold-transition {% block body_class %}{% endblock body_class %}">
 <div class="wrapper">
+    {% include 'includes/navigation.html'%}
     {% include 'includes/sidebar.html' %}
 
     {% block content %}{% endblock content %}
@@ -32,6 +33,18 @@
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}{% endblock javascripts %}
+  
+  <script>
+  {% if messages %}
+  {% for message in messages %}
+      $(document).Toasts('create', {
+      class: 'bg-{{message.level_tag }}',
+      title: '{{ message.level_tag|upper }}',
+      body: '{{ message }}'
+      })
+  {% endfor %}
+  {% endif %}
+  </script>
 
 </body>
 </html>

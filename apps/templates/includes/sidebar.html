@@ -41,8 +41,8 @@
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           {% if user.is_authenticated %}
-          <li class="nav-item has-treeview {% if 'forms-' in segment %} menu-open {% endif %}">
-            <a href="#" class="nav-link {% if 'forms-' in segment %} active {% endif %}">
+          <li class="nav-item has-treeview {% if 'register-nip' in segment %} menu-open {% endif %}">
+            <a href="#" class="nav-link {% if 'register-nip' in segment %} active {% endif %}">
               <i class="nav-icon fas fa-user"></i>
               <p>
                 NIP
@@ -51,13 +51,13 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="/form-general.html" class="nav-link {% if 'forms-general' in segment %} active {% endif %}">
+                <a href="/" class="nav-link {% if 'forms-' in segment %} active {% endif %}">
                   <i class="far fa-circle nav-icon"></i>
                   <p>List</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="/forms-validation.html" class="nav-link {% if 'forms-validation' in segment %} active {% endif %}">
+                <a href="{% url 'dashboard:register_nip'%}" class="nav-link {% if 'register-nip' in segment %} active {% endif %}">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Register NIP</p>
                 </a>
@@ -65,8 +65,8 @@
             </ul>
           </li>
           {% endif %}
-          <li class="nav-item has-treeview {% if 'forms-' in segment %} menu-open {% endif %}">
-            <a href="#" class="nav-link {% if 'forms-' in segment %} active {% endif %}">
+          <li class="nav-item has-treeview {% if 'data' in segment %} menu-open {% endif %}">
+            <a href="#" class="nav-link {% if 'data' in segment %} active {% endif %}">
               <i class="nav-icon fas fa-file"></i>
               <p>
                 Data
@@ -75,7 +75,7 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="/form-general.html" class="nav-link {% if 'forms-general' in segment %} active {% endif %}">
+                <a href="{% url 'dashboard:data' %}" class="nav-link {% if 'upload-data' in segment %} active {% endif %}">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Upload data</p>
                 </a>

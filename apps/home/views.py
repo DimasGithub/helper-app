@@ -8,8 +8,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
+from django.contrib import messages
 from .models import Nip
 from core.uploader import PostingDailyReport
+
 def index(request):
     context = {'segment': 'index'}
 
@@ -18,18 +20,22 @@ def index(request):
 
 def upload(request):
     context = {'segment': 'upload-data'}
-    html_template = loader.get_template('home/forms-general2.html')
+    html_template = loader.get_template('home/upload-data.html')
     if request.method == 'POST':
         try:
             nip = request.POST['nip']
             data_nip = Nip.objects.get(nip=nip)
             if data_nip:
                 file = request.FILES['upload_data']
-                api_kinerja = PostingDailyReport(nip=data_nip.nip, filename=file).requests_data()
-                
-                return HttpResponseRedirect(reverse('admin:index'))
+                PostingDailyReport(nip=data_nip.nip, filename=file).requests_data()
+                messages.success(request, f"Upload data successfull.")
+                return HttpResponseRedirect(reverse('dashboard:data'))
         except Nip.DoesNotExist:
-            return HttpResponseRedirect(reverse('admin:index')) 
+            messages.warning(request, f"NIP `{nip}` not registered.")
+            return HttpResponseRedirect(reverse('dashboard:data'))
+        except:
+            messages.warning(request, 'Data upload failed to process. Please contact admin.')
+            return HttpResponseRedirect(reverse('dashboard:data'))
     return HttpResponse(html_template.render(context, request))
 
 @login_required(login_url='/login/')
@@ -39,9 +45,12 @@ def register_nip(request):
     if request.method == 'POST':
         number_nip = request.POST['nip']
         nip, created = Nip.objects.get_or_create(nip=number_nip)
-        if not created: return HttpResponseRedirect(reverse('admin:index'))
+        if not created:
+            messages.warning(request, f"NIP `{nip}` already registered.")
+            return HttpResponseRedirect(reverse('dashboard:register_nip'))
+        messages.success(request, f"NIP `{nip}` register successfull.")
         nip.save()
-        return HttpResponseRedirect(reverse('admin:index'))
+        return HttpResponseRedirect(reverse('dashboard:register_nip'))
     return HttpResponse(html_template.render(context, request))
 
 @login_required(login_url="/login/")
