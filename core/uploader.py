@@ -106,11 +106,13 @@ class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerfo
     def initial_data_user(self, nip)->dict:
 
         info_user = InfoEmployee(nip).requests_data()
-        if info_user.status_code != 200: raise Exceptions("Error proccessing.")
+        if info_user.status_code != 200:
+            raise Exceptions("Error proccessing.")
         data_user = json.loads(info_user.text)
         info_yaerly_skp = InfoYearlySkp(nip).requests_data()
 
-        if info_yaerly_skp.status_code != 200: raise Exceptions("Error proccessing.")
+        if info_yaerly_skp.status_code != 200:
+            raise Exceptions("Error proccessing.")
         response_info_yaerly_skp = json.loads(info_yaerly_skp.text)
         data_info_yaerly_skp = response_info_yaerly_skp[0]
         intial_data_user= {
@@ -185,7 +187,8 @@ class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerfo
             
             def get_perform_aggrement(nip:str, rencanaKinerjaId:str)->dict:
                 list_perform_aggr = ListPerformAggrement(nip, filter={'month':'Januari', 'year':'2023'}).requests_data()
-                if list_perform_aggr.status_code != 200: raise Exceptions("Error proccessing.")
+                if list_perform_aggr.status_code != 200:
+                    raise Exceptions("Error proccessing.")
 
                 response_perform_aggr = json.loads(list_perform_aggr.text)
 
@@ -204,4 +207,3 @@ class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerfo
             if not self.is_duplicated(data=data):
                 data = json.dumps(data, indent=4)
                 response = requests.post(endpoint, headers = headers,data=data)
-        return response
