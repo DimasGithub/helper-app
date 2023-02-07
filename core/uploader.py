@@ -158,56 +158,51 @@ class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerfo
         headers["Content-Type"] = "application/json"
         initial_data_user = self.initial_data_user(self.nip)
         data_xls = self.xls_to_dict(self.filename)
-        try:
-            for item in data_xls:
-                def hours_minutes_time(start_time:str, last_time:str ):
-                    start_time = datetime.datetime.strptime(start_time,"%H:%M:%S").time()
-                    last_time = datetime.datetime.strptime(last_time,"%H:%M:%S").time()
-                    start_time = datetime.datetime.combine(datetime.datetime.today(), start_time)
-                    last_time = datetime.datetime.combine(datetime.datetime.today(), last_time)
-                    different_time = last_time - start_time
-                    minutes, _ = divmod(different_time.seconds, 60)
-                    hours, minutes = divmod(minutes, 60)
-                    return (int(hours), int(minutes))
+        for item in data_xls:
+            def hours_minutes_time(start_time:str, last_time:str ):
+                start_time = datetime.datetime.strptime(start_time,"%H:%M:%S").time()
+                last_time = datetime.datetime.strptime(last_time,"%H:%M:%S").time()
+                start_time = datetime.datetime.combine(datetime.datetime.today(), start_time)
+                last_time = datetime.datetime.combine(datetime.datetime.today(), last_time)
+                different_time = last_time - start_time
+                minutes, _ = divmod(different_time.seconds, 60)
+                hours, minutes = divmod(minutes, 60)
+                return (int(hours), int(minutes))
 
-                hours, minutes = hours_minutes_time(item.get('start_time'), item.get('last_time'))
-                waktu = f"{hours} Jam {minutes} Menit" if hours > 0 else f"{minutes} Menit"
-                data ={
-                    "tanggal":item.get('date'),
-                    "waktuMulai":item.get('start_time'),
-                    "waktuSelesai":item.get('last_time'),
-                    "jam":hours,
-                    "menit":minutes,
-                    "waktu":waktu,
-                    "jumlah":item.get('count'),
-                    "uraian":item.get('activity_summeries'),
-                    "skp":'ada' if item.get('perform_relation_monthly') else 'tidak-ada',
-                    'rencanaKinerjaId': item.get('perform_monthly')
-                    }
-                
-                def get_perform_aggrement(nip:str, rencanaKinerjaId:str)->dict:
-                    list_perform_aggr = ListPerformAggrement(nip, filter={'month':'Januari', 'year':'2023'}).requests_data()
-                    if list_perform_aggr.status_code != 200:
-                        raise EkinerjaException(message="List Perform Aggrement Not Found.")
-
-                    response_perform_aggr = json.loads(list_perform_aggr.text)
-
-                    data_perform_aggrs = response_perform_aggr.get('data').get('rencanaKinerja')
-                    for data_perform_aggr in data_perform_aggrs:
-                        if " ".join(rencanaKinerjaId.lower().split()) == " ".join(data_perform_aggr.get('targetSkp').get('kegiatanTahunan').lower().split()):
-                            return data_perform_aggr
-                
-                perform_aggr = get_perform_aggrement(self.nip, data.get('rencanaKinerjaId'))
-                data_relation_perform = {
-                    "rencanaKinerjaId": perform_aggr.get('id'),
-                    "output": perform_aggr.get('satuanKuantitas'),
+            hours, minutes = hours_minutes_time(item.get('start_time'), item.get('last_time'))
+            waktu = f"{hours} Jam {minutes} Menit" if hours > 0 else f"{minutes} Menit"
+            data ={
+                "tanggal":item.get('date'),
+                "waktuMulai":item.get('start_time'),
+                "waktuSelesai":item.get('last_time'),
+                "jam":hours,
+                "menit":minutes,
+                "waktu":waktu,
+                "jumlah":item.get('count'),
+                "uraian":item.get('activity_summeries'),
+                "skp":'ada' if item.get('perform_relation_monthly') else 'tidak-ada',
+                'rencanaKinerjaId': item.get('perform_monthly')
                 }
-                data.update(data_relation_perform)
-                data.update(initial_data_user)
-                if not self.is_duplicated(data=data):
-                    data = json.dumps(data, indent=4)
-                    response = requests.post(endpoint, headers = headers,data=data)
+            
+            def get_perform_aggrement(nip:str, rencanaKinerjaId:str)->dict:
+                list_perform_aggr = ListPerformAggrement(nip, filter={'month':'Januari', 'year':'2023'}).requests_data()
+                if list_perform_aggr.status_code != 200:
+                    raise EkinerjaException(message="List Perform Aggrement Not Found.")
 
-            return True
-        except Exception as err:
-            return err
+                response_perform_aggr = json.loads(list_perform_aggr.text)
+
+                data_perform_aggrs = response_perform_aggr.get('data').get('rencanaKinerja')
+                for data_perform_aggr in data_perform_aggrs:
+                    if " ".join(rencanaKinerjaId.lower().split()) == " ".join(data_perform_aggr.get('targetSkp').get('kegiatanTahunan').lower().split()):
+                        return data_perform_aggr
+            
+            perform_aggr = get_perform_aggrement(self.nip, data.get('rencanaKinerjaId'))
+            data_relation_perform = {
+                "rencanaKinerjaId": perform_aggr.get('id'),
+                "output": perform_aggr.get('satuanKuantitas'),
+            }
+            data.update(data_relation_perform)
+            data.update(initial_data_user)
+            if not self.is_duplicated(data=data):
+                data = json.dumps(data, indent=4)
+                response = requests.post(endpoint, headers = headers,data=data)

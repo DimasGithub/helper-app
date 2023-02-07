@@ -27,8 +27,8 @@ def upload(request):
             data_nip = Nip.objects.get(nip=nip)
             if data_nip:
                 file = request.FILES['upload_data']
-                resp = PostingDailyReport(nip=data_nip.nip, filename=file).requests_data()
-                if resp: messages.success(request, f"Upload data successfull.")
+                PostingDailyReport(nip=data_nip.nip, filename=file).requests_data()
+                messages.success(request, f"Upload data successfull.")
                 return HttpResponseRedirect(reverse('dashboard:data'))
         except Nip.DoesNotExist:
             messages.warning(request, f"NIP `{nip}` not registered.")
