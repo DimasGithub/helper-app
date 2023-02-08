@@ -10,7 +10,7 @@ from django.template import loader
 from django.urls import reverse
 from django.contrib import messages
 from .models import Nip
-from core.uploader import PostingDailyReport
+from core.uploader import PostingDailyReport, EkinerjaException
 
 def index(request):
     context = {'segment': 'index'}
@@ -33,9 +33,13 @@ def upload(request):
         except Nip.DoesNotExist:
             messages.warning(request, f"NIP `{nip}` not registered.")
             return HttpResponseRedirect(reverse('dashboard:data'))
-        except Exception as err:
+        except EkinerjaException as err:
             messages.warning(request, f"{err.message} Please contact admin.")
             return HttpResponseRedirect(reverse('dashboard:data'))
+        except Exception as err:
+            messages.warning(request, f"{err}. Please contact admin.")
+            return HttpResponseRedirect(reverse('dashboard:data'))
+
     return HttpResponse(html_template.render(context, request))
 
 @login_required(login_url='/login/')

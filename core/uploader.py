@@ -8,8 +8,9 @@ from openpyxl import load_workbook
 from abc import ABC, abstractmethod
 
 class EkinerjaException(Exception):
-    def __init__(self, message):
-        self.message = message
+    pass
+    # def __init__(self, message):
+    #     self.message = message
 
 class BaseApiEkinerja(ABC):
     url_base_ekinerja ='https://api.e-kinerja.purbalinggakab.go.id'
@@ -107,12 +108,12 @@ class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerfo
 
         info_user = InfoEmployee(nip).requests_data()
         if info_user.status_code != 200:
-            raise EkinerjaException(message="Info user not Found.")
+            raise Exception
         data_user = json.loads(info_user.text)
         info_yaerly_skp = InfoYearlySkp(nip).requests_data()
 
         if info_yaerly_skp.status_code != 200:
-            raise EkinerjaException(message="Info yearly skp not found.")
+            raise Exception
         response_info_yaerly_skp = json.loads(info_yaerly_skp.text)
         data_info_yaerly_skp = response_info_yaerly_skp[0]
         intial_data_user= {
@@ -187,7 +188,7 @@ class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerfo
             def get_perform_aggrement(nip:str, rencanaKinerjaId:str)->dict:
                 list_perform_aggr = ListPerformAggrement(nip, filter={'month':'Januari', 'year':'2023'}).requests_data()
                 if list_perform_aggr.status_code != 200:
-                    raise EkinerjaException(message="List Perform Aggrement Not Found.")
+                    raise Exception
 
                 response_perform_aggr = json.loads(list_perform_aggr.text)
 
