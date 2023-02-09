@@ -1,9 +1,11 @@
 **/migrations/
 **/!__init__.py
 **/__pycache__/
+**/media/
 .env
 .venv
 env/
+
 venv/
 ENV/
 env./

@@ -1,12 +1,16 @@
 import json
-import ast
+import asyncio
+import aiohttp
+
 import requests
 import datetime
 from datetime import time
 from requests.structures import CaseInsensitiveDict
 from openpyxl import load_workbook
 from abc import ABC, abstractmethod
-
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+from django.core.files.uploadedfile import InMemoryUploadedFile
 class EkinerjaException(Exception):
     def __init__(self, message):
         self.message = message
@@ -206,3 +210,7 @@ class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerfo
             if not self.is_duplicated(data=data):
                 data = json.dumps(data, indent=4)
                 response = requests.post(endpoint, headers = headers,data=data)
+
+if __name__ == "__main__":
+    # PostingDailyReport('199510292022031004', filename='core/format_kinerja2.xlsx').requests_data()
+    DeleteAllData('199510292022031004').requests_data()

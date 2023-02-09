@@ -3,20 +3,55 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
+import asyncio
+import aiohttp
+import os
+import time
+import tempfile
+from asgiref.sync import sync_to_async
+import threading
 from django import template
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
 from django.contrib import messages
-from .models import Nip
+from .models import Nip, UploadFile
 from core.uploader import PostingDailyReport, EkinerjaException
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 def index(request):
     context = {'segment': 'index'}
 
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
+
+# async def upload(request):
+#     context = {'segment': 'upload-data'}
+#     html_template = loader.get_template('home/upload-data.html')
+#     if request.method == 'POST':
+#         try:
+#             nip = request.POST['nip']
+#             data_nip = Nip.objects.get(nip=nip)
+#             if data_nip:
+#                 file = request.FILES['upload_data']
+#                 PostingDailyReport(nip=data_nip.nip, filename=file).requests_data()
+#                 messages.success(request, f"Upload data successfull.")
+#                 return HttpResponseRedirect(reverse('dashboard:data'))
+#         except Nip.DoesNotExist:
+#             messages.warning(request, f"NIP `{nip}` not registered.")
+#             return HttpResponseRedirect(reverse('dashboard:data'))
+#         except EkinerjaException as err:
+#             messages.warning(request, f"{err.message} Please contact admin.")
+#             return HttpResponseRedirect(reverse('dashboard:data'))
+#         except Exception as err:
+#             messages.warning(request, f"{err}. Please contact admin.")
+#             return HttpResponseRedirect(reverse('dashboard:data'))
+
+#     return HttpResponse(html_template.render(context, request))
+
 
 def upload(request):
     context = {'segment': 'upload-data'}
@@ -27,7 +62,12 @@ def upload(request):
             data_nip = Nip.objects.get(nip=nip)
             if data_nip:
                 file = request.FILES['upload_data']
-                PostingDailyReport(nip=data_nip.nip, filename=file).requests_data()
+                print(file.content_type)
+                if file.content_type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or not file.name.endswith('.xlsx'):
+                    messages.warning(request, "File must be an .xls file.")
+                    return HttpResponseRedirect(reverse('dashboard:data'))
+                thread = threading.Thread(target=PostingDailyReport(nip=data_nip.nip, filename=file).requests_data())
+                thread.start()
                 messages.success(request, f"Upload data successfull.")
                 return HttpResponseRedirect(reverse('dashboard:data'))
         except Nip.DoesNotExist:
