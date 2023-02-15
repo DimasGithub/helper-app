@@ -20,9 +20,17 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY', default='S#perS3crEt_007')
 
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',
+    }
+}
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
-
+HOST = env('HOST')
 # Assets Management
 ASSETS_ROOT = os.getenv('ASSETS_ROOT', '/static/assets') 
 
@@ -40,7 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.home'  # Enable the inner home (home)
+    'apps.home',  # Enable the inner home (home)
+    'django_celery_results'
 ]
 
 MIDDLEWARE = [
@@ -114,7 +123,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Jakarta'
 
 USE_I18N = True
 
@@ -140,6 +150,18 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 IMAGE_UPLOAD = os.path.join(MEDIA_ROOT)
 IMAGE_UPLOAD_URL = os.path.join(MEDIA_URL)
+
+CELERY_TIMEZONE = 'Asia/Jakarta'
+CELERY_ENABLE_UTC = False
+
+
+
+#MESSAGE BROKER CONFIG RABBITMQ
+
+BROKER_USERNAME = env('BROKER_USERNAME')
+BROKER_PASSWORD = env('BROKER_PASSWORD')
+BROKER_HOST = env('BROKER_HOST')
+BROKER_VHOST = env('BROKER_VHOST')
 
 #############################################################
 #############################################################
