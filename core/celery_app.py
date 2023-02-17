@@ -7,9 +7,9 @@ import os
 from celery import Celery
 from django.conf import settings
 
-URL_BROKER=f"amqp://{settings.BROKER_USERNAME}:{settings.BROKER_PASSWORD}@{settings.BROKER_HOST}/{settings.BROKER_VHOST}"
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+URL_BROKER=f"amqp://{settings.BROKER_USERNAME}:{settings.BROKER_PASSWORD}@{settings.BROKER_HOST}/{settings.BROKER_VHOST}"
 app = Celery('core', broker=URL_BROKER)
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()

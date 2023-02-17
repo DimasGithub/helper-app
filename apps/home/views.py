@@ -7,6 +7,7 @@ import asyncio
 import aiohttp
 import os
 import time
+import json
 import tempfile
 from asgiref.sync import sync_to_async
 import threading
@@ -20,7 +21,7 @@ from django.core.files.storage import default_storage
 from celery.result import AsyncResult
 
 from django.contrib import messages
-from .models import Nip
+from .models import Nip, UploadFile
 from core.uploader import PostingDailyReport, EkinerjaException
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
@@ -79,19 +80,14 @@ class DataView(View):
                         messages.warning(request, "File must be an .xls file.")
                         return redirect(reverse('dashboard:data'))
                     
-                    file_path = default_storage.save('temp/' + file.name, file)
-                    upload = upload_file.apply_async(args=(nip, file_path), countdown=5)
-                    result = AsyncResult(upload)
-                    # Check if the task has been successfully executed
-                    if result.successful():
-                        # Get the task result
-                        task_result = result.result
-                        print(f'Task {upload} was successful: {task_result}')
-                        messages.success(request, f"Upload data successfull.")
-                    else:
-                        error = result.result or result.traceback
-                        # The task has failed or is still in progress
-                        messages.warning(request, f'Task {upload}, {error} has not completed or has failed.')
+                    fs = FileSystemStorage(base_url=os.path.join(settings.IMAGE_UPLOAD_URL,f"{time.strftime('%Y/%m/%d/')}"), location=os.path.join(settings.IMAGE_UPLOAD, f"{time.strftime('%Y/%m/%d/')}"))
+                    file_save = fs.save(file.name, file)
+                    file_url = fs.url(file_save)
+                    obj = UploadFile.objects.create(title=file.name, file_upload=file_save, file_path=file_url, nip=data_nip)
+                    obj.save()
+                    file_pk = obj.id
+                    upload_file.apply_async(args=(nip, file_pk), countdown=3)
+                    messages.success(request, f"Upload data successfull.")
                     return redirect(reverse('dashboard:home'))
             except Nip.DoesNotExist:
                 messages.warning(request, f"NIP `{nip}` not registered.")

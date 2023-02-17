@@ -76,11 +76,12 @@ class DeleteAllData(ListDailyReport):
 
 class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerformAggrement ):
 
-    def __init__(self, nip, filename):
+    def __init__(self, nip:str, filename:str):
         self.nip = nip
         self.filename = filename
 
     def xls_to_dict(self, filename)->dict:
+        print(filename)
         wb = load_workbook(filename)
         worksheet =  wb.active
         list_activities = []

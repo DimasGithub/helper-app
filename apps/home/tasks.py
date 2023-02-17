@@ -2,14 +2,17 @@
 from celery import shared_task
 from core.uploader import PostingDailyReport
 from django.core.files.storage import default_storage
+from django.shortcuts import get_object_or_404
+from .models import UploadFile
 
 @shared_task
-def upload_file(nip, file_path):
+def upload_file(nip:str, file_path:str):
     try:
-        with default_storage.open(file_path, 'rb') as f:
-            PostingDailyReport(nip=nip, filename=file_path).requests_data()
-        default_storage.delete(file_path)
+        file = get_object_or_404(UploadFile, pk=file_path)
+        path = file.file_path
+        file.delete()
+        PostingDailyReport(nip=nip, filename=path).requests_data()
+        return 'Posting upload data to ekinerja.'
     except Exception as e:
-        upload_file.update_state(state='FAILURE', meta={'error': str(e)})
+        upload_file.update_state(state='FAILURE', mezta={'error': str(e)})
         raise
-    return 'Posting upload data to ekinerja.'
