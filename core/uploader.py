@@ -73,6 +73,15 @@ class DeleteAllData(ListDailyReport):
         for id in list_id:
             resp = requests.delete(endpoint, headers = headers, data=json.dumps({'id':int(id)}, indent=4))
             print(resp)
+            
+class DeleteReportDaily(BaseApiEkinerja):
+    def __init__(self, id) -> None:
+        self.id = id
+    def requests_data(self)-> None:
+        endpoint = f"{self.url_base_ekinerja}/laporan-harian"
+        headers = CaseInsensitiveDict()
+        headers["Content-Type"] = "application/json"
+        return requests.delete(endpoint, headers = headers, data=json.dumps({'id':self.id}, indent=4))
 
 class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerformAggrement ):
 

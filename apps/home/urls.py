@@ -13,4 +13,7 @@ urlpatterns = [
     path('', views.index, name='home'),
     path('data/', views.DataView.as_view(), name='data'),
     path('nip/register', views.register_nip, name='register_nip'),
+    path('nip/user-data', views.DataUserView.as_view(), name='user_data'),
+    path('nip/user-data/<str:id>', views.DataUserDetailView.as_view(), name='user_data_details'),
+    path('nip/user-data/<int:id>/delete', views.deleted_report_daily, name='report_delete')
 ]
