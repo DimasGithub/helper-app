@@ -146,7 +146,7 @@ class PostingDailyReport(ListDailyReport, InfoEmployee, InfoYearlySkp, ListPerfo
     def is_duplicated(self, data:dict)->dict:
         list_daily = ListDailyReport(nip=self.nip).requests_data()
         list_data  = json.loads(list_daily.text)
-        for daily in list_data:
+        for daily in list_data.get('items'):
             duplicate_num = 0
             date = daily.get('tanggal').split()
             if date[1].lower() == 'januari':
