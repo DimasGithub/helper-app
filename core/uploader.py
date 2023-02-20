@@ -68,7 +68,7 @@ class DeleteAllData(ListDailyReport):
         list_daily_report = ListDailyReport(self.nip).requests_data()
         resp_list = json.loads(list_daily_report.text)
         list_id = []
-        for resp in resp_list:
+        for resp in resp_list.get('items'):
             list_id.append(resp.get('id'))
         for id in list_id:
             resp = requests.delete(endpoint, headers = headers, data=json.dumps({'id':int(id)}, indent=4))
