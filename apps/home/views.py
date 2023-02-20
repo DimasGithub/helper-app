@@ -6,6 +6,7 @@ Copyright (c) 2019 - present AppSeed.us
 import os
 import time
 import json
+import random
 
 from django import template
 from django.contrib.auth.decorators import login_required
@@ -19,9 +20,9 @@ from django.conf import settings
 from django.views import View
 
 from .models import Nip, UploadFile
-from core.uploader import EkinerjaException, ListDailyReport, DeleteReportDaily
+from core.uploader import EkinerjaException, ListDailyReport, DeleteReportDaily, DeleteAllData
 
-from apps.home.tasks import upload_file
+from apps.home.tasks import upload_file, delete_all_file
 
 
 def index(request):
@@ -47,9 +48,13 @@ class DataView(View):
                 if file.content_type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or not file.name.endswith('.xlsx'):
                     messages.warning(request, "File must be an .xls file.")
                     return redirect(reverse('dashboard:data'))
-                
+                length = 10
+                rand_string = ""
+                for i in range(length):
+                    rand_num = random.randint(0, 9)
+                    rand_string += str(rand_num)
                 fs = FileSystemStorage(base_url=os.path.join(settings.IMAGE_UPLOAD_URL,f"{time.strftime('%Y/%m/%d/')}"), location=os.path.join(settings.IMAGE_UPLOAD, f"{time.strftime('%Y/%m/%d/')}"))
-                file_save = fs.save(file.name, file)
+                file_save = fs.save(rand_string, file)
                 file_url = fs.url(file_save)
                 obj = UploadFile.objects.create(title=file.name, file_upload=file_save, file_path=file_url, nip=data_nip)
                 obj.save()
@@ -66,6 +71,8 @@ class DataView(View):
             messages.warning(request, f"{err}. Please contact admin.")
         
         return redirect(reverse('dashboard:data'))
+
+
 
 
 class DataUserView(View,):
@@ -102,6 +109,18 @@ def deleted_report_daily(request, id):
     html_template ='home/register_nip.html'
     resp = DeleteReportDaily(id=id).requests_data()
     messages.success(request, f"Deleted report daily item successfull.")
+    return redirect(reverse('dashboard:user_data' ))
+
+@login_required(login_url='/login/')
+def deleted_all_report_daily(request, id):
+    try:
+        data_nip = Nip.objects.get(nip=id)
+        nip = str(id)
+        if data_nip:
+            delete_all_file.apply_async(args=(nip,), countdown=3)
+            messages.success(request, f"Deleted all report daily successfull.")
+    except Nip.DoesNotExist:
+        messages.warning(request, f"NIP `{id}` not registered.")
     return redirect(reverse('dashboard:user_data' ))
 
 @login_required(login_url='/login/')

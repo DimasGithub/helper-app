@@ -36,8 +36,8 @@ class ListDailyReport(BaseApiEkinerja):
         self.nip = nip
         
     def requests_data(self):
-        endpoint = f"{self.url_base_ekinerja}/laporan-harian"
-        payload = {'nip':self.nip}
+        endpoint = f"{self.url_base_ekinerja}/laporan-harian/filter/{self.nip}"
+        payload = {'limit':1000}
         return requests.get(endpoint, params=payload)
 
 class ListPerformAggrement(BaseApiEkinerja):
