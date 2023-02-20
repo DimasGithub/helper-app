@@ -72,7 +72,9 @@
               </div>
               <!-- /.card-header -->
               <div class="card-body">
+                {% if reports.items %}
                 <a class="btn btn-xd btn-danger" href="{% url 'dashboard:report_delete_all' id=nip %}" onclick="return confirm('Are you sure delete this report?);"><i class="fas fa-trash"></i> DELETE ALL REPORT DAILY</a>
+                {% endif %}
                 <table id="table-data-user" class="table table-bordered table-striped">
                   <thead>
                   <tr>
