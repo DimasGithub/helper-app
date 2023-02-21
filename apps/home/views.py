@@ -54,7 +54,7 @@ class DataView(View):
                     rand_num = random.randint(0, 9)
                     rand_string += str(rand_num)
                 fs = FileSystemStorage(base_url=os.path.join(settings.IMAGE_UPLOAD_URL,f"{time.strftime('%Y/%m/%d/')}"), location=os.path.join(settings.IMAGE_UPLOAD, f"{time.strftime('%Y/%m/%d/')}"))
-                file_save = fs.save(rand_string, file)
+                file_save = fs.save(f"{rand_string}.xlsx", file)
                 file_url = fs.url(file_save)
                 obj = UploadFile.objects.create(title=file.name, file_upload=file_save, file_path=file_url, nip=data_nip)
                 obj.save()
