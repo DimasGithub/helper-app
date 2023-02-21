@@ -10,6 +10,7 @@ import random
 
 from django import template
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
@@ -30,7 +31,10 @@ def index(request):
 
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
-class DataView(View):
+class DataView(LoginRequiredMixin,View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
     context = {'segment': 'upload-data'}
     html_template = loader.get_template('home/upload-data.html')
 
@@ -72,10 +76,10 @@ class DataView(View):
         
         return redirect(reverse('dashboard:data'))
 
+class DataUserView(View, LoginRequiredMixin):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
 
-
-
-class DataUserView(View,):
     context = {'segment': 'user-data'}
     html_template = 'home/user-data.html'
     def get(self, request): 
@@ -88,7 +92,10 @@ class DataUserView(View,):
             messages.warning(request, f"NIP `{nip}` not registered.")
         return render(request, self.html_template, context=self.context)
 
-class DataUserDetailView(View,):
+class DataUserDetailView(View, LoginRequiredMixin):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+    
     context = {'segment': 'user-data'}
     html_template = 'home/user-data.html'
     def get(self, request, id):
