@@ -1,7 +1,7 @@
-
+import os
 from celery import shared_task
 from core.uploader import PostingDailyReport, DeleteAllData
-from django.core.files.storage import default_storage
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from .models import UploadFile
 
@@ -12,6 +12,7 @@ def upload_file(nip:str, file_path:str):
         path = file.file_path
         file.delete()
         PostingDailyReport(nip=nip, filename=path).requests_data()
+        os.remove(path)
         return 'Posting upload data to ekinerja.'
     except Exception as e:
         upload_file.update_state(state='FAILURE', mezta={'error': str(e)})
